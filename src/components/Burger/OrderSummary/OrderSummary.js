@@ -1,5 +1,5 @@
 import React from 'react';
-import Aux from '../../../hoc/Auxi'
+import Aux from '../../../hoc/Auxi/Auxi'
 import Button from '../../../components/UI/Button/Button';
 
 const orderSummary = (props) => {  // use ( ) when creating jsx, and {} when need to do some processing
