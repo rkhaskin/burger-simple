@@ -4,7 +4,9 @@ import Burger from '../../components/Burger/Burger';
 import BuildControls from '../../components/Burger/BuildControls/BuildControls';
 import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
-
+import axios from '../../../src/axios-orders';
+import Spinner from '../../components/UI/Spinner/Spinner';
+import withErrorHandler from '../../hoc/WithErrorHandler/WithErrorHandler';
 
 const INGREDIENT_PRICES = {
   salad: 0.5,
@@ -23,7 +25,8 @@ class BurgerBuilder extends Component {
     },
     totalPrice:4,
     purchasable: false,
-    showSummary: false
+    showSummary: false,
+    loading: false
   }
 
   // must be arrow function. Simple functions do not have "this" if called from an event
@@ -36,7 +39,33 @@ class BurgerBuilder extends Component {
   }
 
   purchaseContinueHandler = () => {
-    alert("You continue!");
+    this.setState({loading: true, });
+    const order = {
+      ingredients: this.state.ingredients,
+      price: this.state.totalPrice,
+      customer: {
+        name: 'Pushkin',
+        address: {
+          street: '111 Main street',
+          city: 'Plantation',
+          state: 'FL',
+          country: 'USA'
+        },
+        email: 'test@test.com'
+      },
+      deliveryMethod: '1-hour'
+    }
+
+    // https://console.firebase.google.com/project/max-burger-d04a8/database/max-burger-d04a8/data    
+
+    // if order sent to the server successfully, close the modal
+    axios.post('/orders.jso', order)
+      .then(response => {
+        this.setState({loading: false, showSummary: false});
+      })
+      .catch (error => {
+        this.setState({loading: false});
+      });
   }
 
   updatePurchasable(ingredients) {
@@ -98,16 +127,21 @@ class BurgerBuilder extends Component {
         // {salad:true, bacon:false...} - where true and false show whether to disable the buttons
          disabledInfo[i] = disabledInfo[i] <= 0;
     }
+    let orderSummary = <OrderSummary
+    ingredients={this.state.ingredients}
+    purchaseCancelled={this.purchaseCancelledHandler}
+    purchaseContinued={this.purchaseContinueHandler}
+    totalPrice={this.state.totalPrice} />;
+
+    if ( this.state.loading ) {
+      orderSummary = <Spinner />;
+    }
+
     return (
       <Aux>
         {/* when ingredients or price changes, we rerender Modal and Order Summary. But only need to do so when Modal show prop changes*/}
         <Modal show={this.state.showSummary} closeBackdrop={this.purchaseCancelledHandler}>
-          <OrderSummary
-            ingredients={this.state.ingredients}
-            purchaseCancelled={this.purchaseCancelledHandler}
-            purchaseContinued={this.purchaseContinueHandler}
-            totalPrice={this.state.totalPrice}
-          />
+          {orderSummary}
         </Modal>
         <Burger ingredients={this.state.ingredients}/>
         <BuildControls
@@ -123,4 +157,4 @@ class BurgerBuilder extends Component {
   }
 }
 
-export default BurgerBuilder;
+export default withErrorHandler(BurgerBuilder, axios);
