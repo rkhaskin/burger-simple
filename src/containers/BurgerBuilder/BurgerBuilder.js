@@ -17,18 +17,26 @@ const INGREDIENT_PRICES = {
 
 class BurgerBuilder extends Component {
   state = {
-    ingredients: {
-      salad:0,
-      meat:0,
-      cheese:0,
-      bacon:0
-    },
+    ingredients: null,
     totalPrice:4,
     purchasable: false,
     showSummary: false,
-    loading: false
+    loading: false,
+    error: false
   }
 
+  componentDidMount() {
+     axios.get('https://max-burger-d04a8.firebaseio.com/ingredients.json')
+      .then(response => {
+        console.log(response);
+        this.setState({ingredients: response.data});
+      })
+      .catch(error => {
+        this.setState({error: true});
+      });
+  }
+
+  
   // must be arrow function. Simple functions do not have "this" if called from an event
   purchaseHandler = () => {
      this.setState({showSummary:true});
@@ -59,7 +67,7 @@ class BurgerBuilder extends Component {
     // https://console.firebase.google.com/project/max-burger-d04a8/database/max-burger-d04a8/data    
 
     // if order sent to the server successfully, close the modal
-    axios.post('/orders.jso', order)
+    axios.post('/orders.json', order)
       .then(response => {
         this.setState({loading: false, showSummary: false});
       })
@@ -127,15 +135,39 @@ class BurgerBuilder extends Component {
         // {salad:true, bacon:false...} - where true and false show whether to disable the buttons
          disabledInfo[i] = disabledInfo[i] <= 0;
     }
-    let orderSummary = <OrderSummary
-    ingredients={this.state.ingredients}
-    purchaseCancelled={this.purchaseCancelledHandler}
-    purchaseContinued={this.purchaseContinueHandler}
-    totalPrice={this.state.totalPrice} />;
 
-    if ( this.state.loading ) {
-      orderSummary = <Spinner />;
-    }
+
+    let orderSummary = null;
+    
+
+
+    let burger = this.state.error ? <p>Ingredients cannot be loaded!</p> : <Spinner />
+    if (this.state.ingredients) {
+    burger = (
+      <Aux>
+        <Burger ingredients={this.state.ingredients}/>
+          <BuildControls
+            ingredientAdded={this.addIngredientHandler}
+            ingredientRemoved={this.removeIngredientHandler}
+            disabled={disabledInfo}
+            price={this.state.totalPrice}
+            purchasable={this.state.purchasable}
+            ordered={this.purchaseHandler}
+          />
+      </Aux>        
+    );
+
+    orderSummary = <OrderSummary ingredients={this.state.ingredients}
+      purchaseCancelled={this.purchaseCancelledHandler}
+      purchaseContinued={this.purchaseContinueHandler}
+      totalPrice={this.state.totalPrice} />;
+
+  }
+
+  if ( this.state.loading ) {
+    orderSummary = <Spinner />;
+  }
+
 
     return (
       <Aux>
@@ -143,15 +175,7 @@ class BurgerBuilder extends Component {
         <Modal show={this.state.showSummary} closeBackdrop={this.purchaseCancelledHandler}>
           {orderSummary}
         </Modal>
-        <Burger ingredients={this.state.ingredients}/>
-        <BuildControls
-          ingredientAdded={this.addIngredientHandler}
-          ingredientRemoved={this.removeIngredientHandler}
-          disabled={disabledInfo}
-          price={this.state.totalPrice}
-          purchasable={this.state.purchasable}
-          ordered={this.purchaseHandler}
-        />
+          {burger}
       </Aux>
     );
   }
