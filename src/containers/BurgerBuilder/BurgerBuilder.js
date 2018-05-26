@@ -47,33 +47,48 @@ class BurgerBuilder extends Component {
   }
 
   purchaseContinueHandler = () => {
-    this.setState({loading: true, });
-    const order = {
-      ingredients: this.state.ingredients,
-      price: this.state.totalPrice,
-      customer: {
-        name: 'Pushkin',
-        address: {
-          street: '111 Main street',
-          city: 'Plantation',
-          state: 'FL',
-          country: 'USA'
-        },
-        email: 'test@test.com'
-      },
-      deliveryMethod: '1-hour'
+    // this.setState({loading: true, });
+    // const order = {
+    //   ingredients: this.state.ingredients,
+    //   price: this.state.totalPrice,
+    //   customer: {
+    //     name: 'Pushkin',
+    //     address: {
+    //       street: '111 Main street',
+    //       city: 'Plantation',
+    //       state: 'FL',
+    //       country: 'USA'
+    //     },
+    //     email: 'test@test.com'
+    //   },
+    //   deliveryMethod: '1-hour'
+    // }
+
+    // // https://console.firebase.google.com/project/max-burger-d04a8/database/max-burger-d04a8/data    
+
+    // // if order sent to the server successfully, close the modal
+    // axios.post('/orders.json', order)
+    //   .then(response => {
+    //     this.setState({loading: false, showSummary: false});
+    //   })
+    //   .catch (error => {
+    //     this.setState({loading: false});
+    //   });
+
+
+    const queryParams = [];
+    // for..in is a method for iterating over "enumerable" properties of an object
+    for (let i in this.state.ingredients) {
+      // i is the key - ingredient name, this.state.ingredients[i] - is the ingredient value
+      queryParams.push(encodeURIComponent(i) + '=' + encodeURIComponent(this.state.ingredients[i]));
     }
 
-    // https://console.firebase.google.com/project/max-burger-d04a8/database/max-burger-d04a8/data    
+    const queryString = queryParams.join('&');
 
-    // if order sent to the server successfully, close the modal
-    axios.post('/orders.json', order)
-      .then(response => {
-        this.setState({loading: false, showSummary: false});
-      })
-      .catch (error => {
-        this.setState({loading: false});
-      });
+    this.props.history.push({
+      pathname: "/checkout",
+      search: '?' + queryString 
+    });
   }
 
   updatePurchasable(ingredients) {
