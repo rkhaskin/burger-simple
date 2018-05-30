@@ -5,9 +5,12 @@ import Aux from '../../../hoc/Auxi/Auxi';
 
 class Modal extends Component {
 
+  // we are passing <Spinner /> as children, 
+ //so as show does not change, need to add this || statement
+                                                    
   shouldComponentUpdate(nextProps, nextState) {
     return nextProps.show !== this.props.show 
-      || nextProps.children !== this.props.children; // we are passing <Spinner /> as children, so as show does not change, need to add this || statement
+      || nextProps.children !== this.props.children; 
   }
 
   render() {

@@ -9,30 +9,40 @@ const Input = (props) => {
 
     // check the new inputType const
     //switch (inputType) {
-      switch (props.elementType) {  
+
+    let validationError = null
+    const inputClasses = [classes.InputElement];
+    if (props.invalid && props.shouldValidate && props.touched) {
+        inputClasses.push(classes.Invalid);
+
+        validationError = <p className={classes.ValidationError}>Please enter a valid {props.propertyName}</p>;
+
+    }
+
+    switch (props.elementType) {
         case ('input'):
             // pass ...rest without inputType
-//            inputElement = <input className={classes.InputElement} {...rest}/>
-            inputElement = <input className={classes.InputElement} {...props.elementConfig} value={props.value}/>
+            //            inputElement = <input className={classes.InputElement} {...rest}/>
+            inputElement = <input className={inputClasses.join(' ')} {...props.elementConfig} value={props.value} onChange={props.changed} />
             break;
         case ('textarea'):
-            inputElement = <textarea className={classes.InputElement} {...props.elementConfig} value={props.value}/>
+            inputElement = <textarea className={inputClasses.join(' ')} {...props.elementConfig} value={props.value} onChange={props.changed} />
             break;
         case ('select'):
-            inputElement = <select 
-            className={classes.InputElement} 
-            value={props.value}>
-            {
-                props.elementConfig.options.map(option => (
-                <option key={option.value} value={option.value}>{option.displayValue}</option>
-            ))};
-
-            }
+            inputElement = <select
+                className={inputClasses.join(' ')}
+                value={props.value} onChange={props.changed}>
+                {
+                    props.elementConfig.options.map(option => (
+                        <option key={option.value} value={option.value} onChange={props.changed}>{option.displayValue}</option>
+                    ))};
+    
+                }
             </select>
-            
-            break;    
+
+            break;
         default:
-            inputElement = <input className={classes.InputElement} {...props.elementConfig} value={props.value}/>
+            inputElement = <input className={inputClasses.join(' ')} {...props.elementConfig} value={props.value} onChange={props.changed} />
 
     }
 
@@ -40,6 +50,7 @@ const Input = (props) => {
         <div className={classes.Input}>
             <label className={classes.Label}>{props.label}</label>
             {inputElement}
+            {validationError}
         </div>
 
     );
